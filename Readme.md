@@ -37,15 +37,16 @@ TODO: Investigate permissions more
 
 A full example is in the `Examples` directory where vanilla Kafka producer and consumer are configured using Environment Variables.
 They will not connect to a Topic if the Environment Variables are not present.
-To activate the Operator you need to create a ConfigMap with two labels:
+To activate the Operator you need to create a ConfigMap with three labels:
 
 ```yaml
 streamzi.io/kind=ev
-streamzi.io/target=Consumer
+streamzi.io/targetKey=app
+streamzi.io/targetValue=Consumer
 ```
 
 The first label indicates that this ConfigMap cotains a data payload of Environment Variables.
-The second label identifies the label of the application (Deployment) that will receve the enviroment variables.
+The second and third labels identify the selector of the application (Deployment) that will receve the enviroment variables. e.g. selector-list includes app=Consumer.
 The full ConfigMap should look similar to the following snippet.
 
 ```yaml
@@ -58,7 +59,8 @@ metadata:
   creationTimestamp: '2018-07-03T10:03:53Z'
   labels:
     streamzi.io/kind: ev
-    streamzi.io/target: Consumer
+    streamzi.io/targetKey: app
+    streamzi.io/targetValue: Consumer
   name: consumer.cm
   namespace: myproject
   resourceVersion: '285304'
