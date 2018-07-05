@@ -3,6 +3,7 @@ package io.streamzi.ev.operator;
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.EnvVar;
+import io.fabric8.kubernetes.api.model.extensions.Deployment;
 import io.fabric8.openshift.api.model.DeploymentConfig;
 import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftClient;
@@ -22,7 +23,15 @@ public class ConfigMapOperator implements EnvironmentVariableOperator<ConfigMap>
 
     private final Logger logger = Logger.getLogger(ConfigMapOperator.class.getName());
 
-    private static final String TARGET_LABEL = "streamzi.io/target";
+    private static final String TARGET_KEY_LABEL = "streamzi.io/targetKey";
+
+    private static final String TARGET_VALUE_LABEL = "streamzi.io/targetValue";
+
+    private OpenShiftClient osClient;
+
+    public ConfigMapOperator() {
+        osClient = new DefaultOpenShiftClient();
+    }
 
     @Override
     public void onAdded(ConfigMap configMap) throws NoLabelException {
@@ -48,16 +57,16 @@ public class ConfigMapOperator implements EnvironmentVariableOperator<ConfigMap>
      */
     private void configMapToDeploymentConfig(ConfigMap configMap, boolean remove) throws NoLabelException {
 
-        final String targetContainer = Util.getTargetContainerName(configMap, TARGET_LABEL);
+        final String targetContainerLabelKey = Util.getLabelValue(configMap, TARGET_KEY_LABEL);
+        final String targetContainerLabelValue = Util.getLabelValue(configMap, TARGET_VALUE_LABEL);
 
         //Only if we've got a valid container to target
-        if (targetContainer != null) {
+        if (targetContainerLabelKey != null && targetContainerLabelValue != null) {
 
-            final OpenShiftClient osClient = new DefaultOpenShiftClient();
 
-            //Get the deployment which match the name in the CM label
+            //Deal with OpenShift Deployment Configs
             List<DeploymentConfig> dcs = osClient.deploymentConfigs().inNamespace(configMap.getMetadata().getNamespace())
-                    .withLabel("app", targetContainer).list().getItems();
+                    .withLabel(targetContainerLabelKey, targetContainerLabelValue).list().getItems();
 
             for (DeploymentConfig dc : dcs) {
 
@@ -74,32 +83,8 @@ public class ConfigMapOperator implements EnvironmentVariableOperator<ConfigMap>
                     final List<Container> containers = dc.getSpec().getTemplate().getSpec().getContainers();
                     for (Container container : containers) {
 
-                        //Remove the EnvVar if the CM has been deleted
-                        if (remove) {
-                            if (container.getEnv() != null && container.getEnv().contains(ev)) {
-                                logger.info("Removing " + ev);
-                                container.getEnv().remove(ev);
-                                updated = true;
-                            }
-                        } else {
-
-                            //Do not update the DC if the EnvVar is the same as an existing one
-                            if (container.getEnv().contains(ev)) {
-                                break;
-                            } else {
-
-                                logger.info("Creating / updating " + ev);
-
-                                //Remove other EnvVars with the same name.
-                                //Necessary otherwise get multiple Environment Variables with the same key which would lead to unpredictable behaviour.
-                                container.getEnv().removeIf(existing ->
-                                        existing.getName().toUpperCase().equals(ev.getName().toUpperCase()));
-
-                                //Add
-                                container.getEnv().add(ev);
-                                updated = true;
-                            }
-                        }
+                        //Update the container if necessary
+                        updated = updateContainer(container, ev, remove);
                     }
                 }
 
@@ -108,9 +93,78 @@ public class ConfigMapOperator implements EnvironmentVariableOperator<ConfigMap>
                     osClient.deploymentConfigs().inNamespace(configMap.getMetadata().getNamespace()).createOrReplace(dc);
                 }
             }
-        } else {
+
+            //Deal with k8s Deployments
+            List<Deployment> deployments = osClient.extensions().deployments().inNamespace(configMap.getMetadata().getNamespace())
+                    .withLabel(targetContainerLabelKey, targetContainerLabelValue).list().getItems();
+
+            for (Deployment deployment : deployments) {
+
+                boolean updated = false;
+
+                //For each EnvVar
+                final Map<String, String> data = configMap.getData();
+                for (String key : data.keySet()) {
+
+                    //Create a new sanitised EnvVar. x.y.z -> X_Y_Z
+                    final EnvVar ev = new EnvVar(sanitiseEnvVar(key), data.get(key), null);
+
+                    //For each container
+                    final List<Container> containers = deployment.getSpec().getTemplate().getSpec().getContainers();
+                    for (Container container : containers) {
+
+                        updated = updateContainer(container, ev, remove);
+                    }
+                }
+
+                //Push change to OpenShift
+                if (updated) {
+                    osClient.extensions().deployments().inNamespace(configMap.getMetadata().getNamespace()).createOrReplace(deployment);
+                }
+            }
+
+        } else
+
+        {
             throw new NoLabelException("Ignoring ConfigMap as it has not label (streamzi.io/target=<APP>) to identify container");
         }
+
     }
 
-   }
+    /*
+     * Add the Environment Variable to the container if it is different or doesn't exist.
+     * Will remove the EnvironmentVariable if remove == true;
+     */
+    private boolean updateContainer(Container container, EnvVar ev, boolean remove) {
+
+        boolean updated = false;
+        //Remove the EnvVar if the CM has been deleted
+        if (remove) {
+            if (container.getEnv() != null && container.getEnv().contains(ev)) {
+                logger.info("Removing " + ev);
+                container.getEnv().remove(ev);
+                updated = true;
+            }
+        } else {
+
+            //Do not update the DC if the EnvVar is the same as an existing one
+            if (container.getEnv().contains(ev)) {
+                return false;
+            } else {
+
+                logger.info("Creating / updating " + ev);
+
+                //Remove other EnvVars with the same name.
+                //Necessary otherwise get multiple Environment Variables with the same key which would lead to unpredictable behaviour.
+                container.getEnv().removeIf(existing ->
+                        existing.getName().toUpperCase().equals(ev.getName().toUpperCase()));
+
+                //Add
+                container.getEnv().add(ev);
+                updated = true;
+            }
+        }
+        return updated;
+    }
+
+}
