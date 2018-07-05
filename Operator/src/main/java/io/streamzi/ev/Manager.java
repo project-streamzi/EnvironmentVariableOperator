@@ -2,8 +2,10 @@ package io.streamzi.ev;
 
 import io.streamzi.ev.operator.ConfigMapOperator;
 import io.streamzi.ev.operator.DeploymentConfigOperator;
+import io.streamzi.ev.operator.DeploymentOperator;
 import io.streamzi.ev.watcher.DeploymentConfigWatcher;
 import io.streamzi.ev.watcher.ConfigMapWatcher;
+import io.streamzi.ev.watcher.DeploymentWatcher;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -26,10 +28,13 @@ public class Manager {
     public static void main(String[] args) {
 
         DeploymentConfigWatcher dcw = new DeploymentConfigWatcher(new DeploymentConfigOperator());
+        DeploymentWatcher dw = new DeploymentWatcher(new DeploymentOperator());
         ConfigMapWatcher cmw = new ConfigMapWatcher(new ConfigMapOperator(), CM_PREDICATE);
 
-        final ExecutorService executor = Executors.newFixedThreadPool(2);
-        executor.submit(dcw);executor.submit(cmw);
+        final ExecutorService executor = Executors.newFixedThreadPool(3);
+        executor.submit(dcw);
+        executor.submit(dw);
+        executor.submit(cmw);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             logger.info("Shutting down");

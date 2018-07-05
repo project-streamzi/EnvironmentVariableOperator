@@ -15,11 +15,11 @@ public class Util {
     }
 
     //Split the label into the container name that we are targetting
-    public static String getTargetContainerName(ConfigMap configMap, String targetLabel) throws IllegalArgumentException {
+    public static String getLabelValue(ConfigMap configMap, String key) throws IllegalArgumentException {
 
         if (configMap.getMetadata().getLabels() != null) {
 
-            final String target = configMap.getMetadata().getLabels().get(targetLabel);
+            final String target = configMap.getMetadata().getLabels().get(key);
 
             if (target == null || target.equals("")) {
                 return null;

@@ -6,6 +6,8 @@ package io.streamzi.ev.watcher;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
+import io.fabric8.kubernetes.client.DefaultKubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.openshift.client.DefaultOpenShiftClient;
@@ -73,9 +75,9 @@ public class ConfigMapWatcher implements Watcher<ConfigMap>, Runnable {
     public void run() {
         logger.info("Starting ConfigMapWatcher");
 
-        final OpenShiftClient osClient = new DefaultOpenShiftClient();
+        final KubernetesClient client = new DefaultKubernetesClient();
 
-        osClient.configMaps().inNamespace(osClient.getNamespace()).watch(this);
+        client.configMaps().inNamespace(client.getNamespace()).watch(this);
     }
 
 
