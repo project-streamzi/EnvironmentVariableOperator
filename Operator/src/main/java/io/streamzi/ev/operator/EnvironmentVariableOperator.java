@@ -1,7 +1,5 @@
 package io.streamzi.ev.operator;
 
-import io.fabric8.kubernetes.api.model.ConfigMap;
-import io.fabric8.openshift.api.model.DeploymentConfig;
 import io.streamzi.ev.NoLabelException;
 
 /**

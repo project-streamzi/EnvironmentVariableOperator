@@ -11,16 +11,17 @@ import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.streamzi.ev.NoLabelException;
 import io.streamzi.ev.operator.EnvironmentVariableOperator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Map;
-import java.util.logging.Logger;
 
 /**
  * Watch for changes in a ConfigMap and push them to an EnvironmentVariableOperator for applying changes to the Environment Variables of containers
  */
 public class DeploymentConfigWatcher implements Watcher<DeploymentConfig>, Runnable {
 
-    private final static Logger logger = Logger.getLogger(DeploymentConfigWatcher.class.getName());
+    private final static Logger logger = LogManager.getLogger(DeploymentConfigWatcher.class);
 
     //EnvironmentVariableOperator for updating Environment variables
     private EnvironmentVariableOperator<DeploymentConfig> operator;
@@ -49,10 +50,10 @@ public class DeploymentConfigWatcher implements Watcher<DeploymentConfig>, Runna
                     operator.onDeleted(dc);
                     break;
                 case ERROR:
-                    logger.warning("Watch received action=ERROR for DeploymentConfig " + name);
+                    logger.warn("Watch received action=ERROR for DeploymentConfig " + name);
             }
         } catch (NoLabelException e) {
-            logger.warning(e.getMessage());
+            logger.warn(e.getMessage());
         }
 
 
@@ -69,5 +70,6 @@ public class DeploymentConfigWatcher implements Watcher<DeploymentConfig>, Runna
     @Override
     public void onClose(KubernetesClientException e) {
         logger.info("Closing Watcher: " + this);
+        logger.info(e.getMessage());
     }
 }
