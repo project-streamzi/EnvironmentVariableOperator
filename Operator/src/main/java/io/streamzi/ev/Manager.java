@@ -26,6 +26,8 @@ public class Manager {
 
     public static void main(String[] args) {
 
+        logger.info("\uD83D\uDEE0 Starting Environment Variable Operator \uD83D\uDEE0");
+
         DeploymentConfigWatcher dcw = new DeploymentConfigWatcher(new DeploymentConfigOperator());
         DeploymentWatcher dw = new DeploymentWatcher(new DeploymentOperator());
         ConfigMapWatcher cmw = new ConfigMapWatcher(new ConfigMapOperator(), CM_PREDICATE);
