@@ -12,7 +12,6 @@ import io.fabric8.openshift.client.OpenShiftClient;
 import io.streamzi.ev.NoLabelException;
 import io.streamzi.ev.operator.EnvironmentVariableOperator;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.Map;
 
@@ -21,7 +20,7 @@ import java.util.Map;
  */
 public class DeploymentConfigWatcher implements Watcher<DeploymentConfig>, Runnable {
 
-    private final static Logger logger = LogManager.getLogger(DeploymentConfigWatcher.class);
+    private final static org.apache.logging.log4j.Logger logger = LogManager.getLogger(DeploymentConfigWatcher.class);
 
     //EnvironmentVariableOperator for updating Environment variables
     private EnvironmentVariableOperator<DeploymentConfig> operator;

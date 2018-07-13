@@ -7,7 +7,6 @@ import io.fabric8.kubernetes.api.model.extensions.Deployment;
 import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftClient;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 
@@ -17,7 +16,7 @@ import java.util.List;
  */
 public class DeploymentOperator implements EnvironmentVariableOperator<Deployment> {
 
-    private final static Logger logger = LogManager.getLogger(DeploymentOperator.class);
+    private final static org.apache.logging.log4j.Logger logger = LogManager.getLogger(DeploymentOperator.class);
 
     private static final String TARGET_LABEL = "streamzi.io/target";
 
