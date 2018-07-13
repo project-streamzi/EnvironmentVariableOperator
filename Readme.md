@@ -41,8 +41,7 @@ To activate the Operator you need to create a ConfigMap with three labels:
 
 ```yaml
 streamzi.io/kind=ev
-streamzi.io/targetKey=app
-streamzi.io/targetValue=Consumer
+streamzi.io/target=Consumer
 ```
 
 The first label indicates that this ConfigMap cotains a data payload of Environment Variables.
@@ -59,8 +58,7 @@ metadata:
   creationTimestamp: '2018-07-03T10:03:53Z'
   labels:
     streamzi.io/kind: ev
-    streamzi.io/targetKey: app
-    streamzi.io/targetValue: Consumer
+    streamzi.io/target: Consumer
   name: consumer.cm
   namespace: myproject
   resourceVersion: '285304'

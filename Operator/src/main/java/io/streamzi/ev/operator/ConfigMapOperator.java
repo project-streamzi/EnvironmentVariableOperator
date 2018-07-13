@@ -8,10 +8,11 @@ import io.fabric8.openshift.api.model.DeploymentConfig;
 import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.streamzi.ev.NoLabelException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import static io.streamzi.ev.operator.Util.sanitiseEnvVar;
 
@@ -21,11 +22,9 @@ import static io.streamzi.ev.operator.Util.sanitiseEnvVar;
  */
 public class ConfigMapOperator implements EnvironmentVariableOperator<ConfigMap> {
 
-    private final Logger logger = Logger.getLogger(ConfigMapOperator.class.getName());
+    private final static Logger logger = LogManager.getLogger(EnvironmentVariableOperator.class);
 
-    private static final String TARGET_KEY_LABEL = "streamzi.io/targetKey";
-
-    private static final String TARGET_VALUE_LABEL = "streamzi.io/targetValue";
+    private static final String TARGET_LABEL = "streamzi.io/target";
 
     private OpenShiftClient osClient;
 
@@ -57,18 +56,15 @@ public class ConfigMapOperator implements EnvironmentVariableOperator<ConfigMap>
      */
     private void configMapToDeploymentConfig(ConfigMap configMap, boolean remove) throws NoLabelException {
 
-        final String targetContainerLabelKey = Util.getLabelValue(configMap, TARGET_KEY_LABEL);
-        final String targetContainerLabelValue = Util.getLabelValue(configMap, TARGET_VALUE_LABEL);
+        final String targetContainerName = Util.getLabelValue(configMap, TARGET_LABEL);
 
         //Only if we've got a valid container to target
-        if (targetContainerLabelKey != null && targetContainerLabelValue != null) {
-
+        if (targetContainerName != null) {
 
             //Deal with OpenShift Deployment Configs
-            List<DeploymentConfig> dcs = osClient.deploymentConfigs().inNamespace(configMap.getMetadata().getNamespace())
-                    .withLabel(targetContainerLabelKey, targetContainerLabelValue).list().getItems();
+            DeploymentConfig dc = osClient.deploymentConfigs().inNamespace(configMap.getMetadata().getNamespace()).withName(targetContainerName).get();
 
-            for (DeploymentConfig dc : dcs) {
+            if (dc != null) {
 
                 boolean updated = false;
 
@@ -90,15 +86,15 @@ public class ConfigMapOperator implements EnvironmentVariableOperator<ConfigMap>
 
                 //Push change to OpenShift
                 if (updated) {
+                    logger.info("Updating DeploymentConfig: " + dc.getMetadata().getName() + " with data from ConfigMap: " + configMap.getMetadata().getName());
                     osClient.deploymentConfigs().inNamespace(configMap.getMetadata().getNamespace()).createOrReplace(dc);
                 }
             }
 
             //Deal with k8s Deployments
-            List<Deployment> deployments = osClient.extensions().deployments().inNamespace(configMap.getMetadata().getNamespace())
-                    .withLabel(targetContainerLabelKey, targetContainerLabelValue).list().getItems();
+            Deployment deployment = osClient.extensions().deployments().inNamespace(configMap.getMetadata().getNamespace()).withName(targetContainerName).get();
 
-            for (Deployment deployment : deployments) {
+            if (deployment != null) {
 
                 boolean updated = false;
 
@@ -119,6 +115,7 @@ public class ConfigMapOperator implements EnvironmentVariableOperator<ConfigMap>
 
                 //Push change to OpenShift
                 if (updated) {
+                    logger.info("Updating DeploymentConfig: " + deployment.getMetadata().getName() + " with data from ConfigMap: " + configMap.getMetadata().getName());
                     osClient.extensions().deployments().inNamespace(configMap.getMetadata().getNamespace()).createOrReplace(deployment);
                 }
             }
@@ -141,7 +138,7 @@ public class ConfigMapOperator implements EnvironmentVariableOperator<ConfigMap>
         //Remove the EnvVar if the CM has been deleted
         if (remove) {
             if (container.getEnv() != null && container.getEnv().contains(ev)) {
-                logger.info("Removing " + ev);
+                logger.info("Removing " + ev + " from " + container.getName());
                 container.getEnv().remove(ev);
                 updated = true;
             }
@@ -152,7 +149,7 @@ public class ConfigMapOperator implements EnvironmentVariableOperator<ConfigMap>
                 return false;
             } else {
 
-                logger.info("Creating / updating " + ev);
+                logger.info("Creating / updating " + ev + " from " + container.getName());
 
                 //Remove other EnvVars with the same name.
                 //Necessary otherwise get multiple Environment Variables with the same key which would lead to unpredictable behaviour.

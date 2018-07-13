@@ -3,22 +3,22 @@ package io.streamzi.ev;
 import io.streamzi.ev.operator.ConfigMapOperator;
 import io.streamzi.ev.operator.DeploymentConfigOperator;
 import io.streamzi.ev.operator.DeploymentOperator;
-import io.streamzi.ev.watcher.DeploymentConfigWatcher;
 import io.streamzi.ev.watcher.ConfigMapWatcher;
+import io.streamzi.ev.watcher.DeploymentConfigWatcher;
 import io.streamzi.ev.watcher.DeploymentWatcher;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Start the ConfigMap Watcher
  */
 public class Manager {
 
-    private static final Logger logger = Logger.getLogger(Manager.class.getName());
+    private final static Logger logger = LogManager.getLogger(Manager.class);
 
     private static final String CM_PREDICATE = "streamzi.io/kind=ev";
 
@@ -42,7 +42,7 @@ public class Manager {
             try {
                 executor.awaitTermination(5000, TimeUnit.MILLISECONDS);
             } catch (InterruptedException ie) {
-                logger.log(Level.SEVERE, "Error on close", ie);
+                logger.fatal("Error on close", ie);
             }
         }));
 

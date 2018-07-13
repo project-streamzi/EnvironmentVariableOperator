@@ -6,9 +6,10 @@ import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.extensions.Deployment;
 import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftClient;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * EnvironmentVariableOperator that will take the payload of a DeploymentConfig and check to see if there are ConfigMaps
@@ -16,11 +17,13 @@ import java.util.logging.Logger;
  */
 public class DeploymentOperator implements EnvironmentVariableOperator<Deployment> {
 
-    private final Logger logger = Logger.getLogger(DeploymentOperator.class.getName());
+    private final static Logger logger = LogManager.getLogger(DeploymentOperator.class);
 
     private static final String TARGET_LABEL = "streamzi.io/target";
 
     private static final String KIND_LABEL = "streamzi.io/kind";
+
+    public static final String KIND_VALUE = "ev";
 
     @Override
     public void onAdded(Deployment d) {
@@ -45,14 +48,14 @@ public class DeploymentOperator implements EnvironmentVariableOperator<Deploymen
 
         boolean updated = false;
 
-        final String appName = d.getMetadata().getLabels().get("app");
+        final String appName = d.getMetadata().getName();
 
         final OpenShiftClient osClient = new DefaultOpenShiftClient();
         final List<ConfigMap> cms = osClient.configMaps().inNamespace(d.getMetadata().getNamespace()).withLabel(TARGET_LABEL, appName).list().getItems();
 
         for (ConfigMap cm : cms) {
 
-            if (cm.getMetadata().getLabels().containsKey(KIND_LABEL) && cm.getMetadata().getLabels().get(KIND_LABEL).equals("ev")) {
+            if (cm.getMetadata().getLabels().containsKey(KIND_LABEL) && cm.getMetadata().getLabels().get(KIND_LABEL).equals(KIND_VALUE)) {
 
                 for (String key : cm.getData().keySet()) {
 
@@ -83,6 +86,7 @@ public class DeploymentOperator implements EnvironmentVariableOperator<Deploymen
         }
 
         if (updated) {
+            logger.info("Updating Deployment: " + d.getMetadata().getName());
             osClient.extensions().deployments().inNamespace(d.getMetadata().getNamespace()).createOrReplace(d);
         }
 

@@ -14,12 +14,36 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
+    <properties>
+        <log4j.version>2.11.0</log4j.version>
+        <openshift.fabric8.version>3.2.0</openshift.fabric8.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>io.fabric8</groupId>
             <artifactId>openshift-client</artifactId>
-            <version>3.2.0</version>
+            <version>${openshift.fabric8.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -56,42 +80,33 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
+
+
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>fabric8-maven-plugin</artifactId>
+                <version>3.5.30</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>resource</goal>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <resources>
+                        <labels>
+                            <service>
+                                <expose>true</expose>
+                            </service>
+                        </labels>
+                    </resources>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
-    <profiles>
-
-        <profile>
-            <id>openshift</id>
-            <build>
-                <plugins>
-
-                    <plugin>
-                        <groupId>io.fabric8</groupId>
-                        <artifactId>fabric8-maven-plugin</artifactId>
-                        <version>3.5.30</version>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>resource</goal>
-                                    <goal>build</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <resources>
-                                <labels>
-                                    <service>
-                                        <expose>true</expose>
-                                    </service>
-                                </labels>
-                            </resources>
-                        </configuration>
-                    </plugin>
-
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
 
 </project>
