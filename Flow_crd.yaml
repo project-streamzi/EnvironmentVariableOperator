@@ -1,0 +1,35 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: flows.gw.ce.streamzi.io
+spec:
+  group: gw.ce.streamzi.io
+  scope: Namespaced
+  version: v1alpha1
+  names:
+    kind: flow
+    listKind: FlowList
+    plural: flows
+    singular: flow
+    shortNames:
+    - fl
+    validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          node:
+            image: my-image
+            uuid: e62d2ac4-918c-4a68-aa29-e26abb9b8fc6
+            input: some-source
+            output: some-sink
+          node:
+            image: my-image
+            uuid: 2a199b7a-d7d6-4ac5-b37d-5bbead299884
+            input: some-source
+            output: some-sink
+          links:
+            sourceUuid: e62d2ac4-918c-4a68-aa29-e26abb9b8fc6
+            targetUuid: 2a199b7a-d7d6-4ac5-b37d-5bbead299884
+            sourcePortName: output.data
+            targetPortName: input.data
+
