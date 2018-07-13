@@ -13,7 +13,6 @@ import io.fabric8.kubernetes.client.Watcher;
 import io.streamzi.ev.NoLabelException;
 import io.streamzi.ev.operator.EnvironmentVariableOperator;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.Map;
 
@@ -22,7 +21,7 @@ import java.util.Map;
  */
 public class ConfigMapWatcher implements Watcher<ConfigMap>, Runnable {
 
-    private final static Logger logger = LogManager.getLogger(ConfigMapWatcher.class);
+    private final static org.apache.logging.log4j.Logger logger = LogManager.getLogger(ConfigMapWatcher.class);
 
     //Label that we're going to watch. e.g. streamzi.io/kind=ev
     private String cmPredicate;

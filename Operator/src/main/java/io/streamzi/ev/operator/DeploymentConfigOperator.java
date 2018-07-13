@@ -7,7 +7,6 @@ import io.fabric8.openshift.api.model.DeploymentConfig;
 import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftClient;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 
@@ -17,7 +16,7 @@ import java.util.List;
  */
 public class DeploymentConfigOperator implements EnvironmentVariableOperator<DeploymentConfig> {
 
-    private final static Logger logger = LogManager.getLogger(DeploymentConfigOperator.class);
+    private final static org.apache.logging.log4j.Logger logger = LogManager.getLogger(DeploymentConfigOperator.class);
 
     private static final String TARGET_LABEL = "streamzi.io/target";
 
