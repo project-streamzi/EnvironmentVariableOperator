@@ -48,7 +48,7 @@ public class SimpleProcessor implements Runnable {
         final StreamsBuilder builder = new StreamsBuilder();
 
         logger.info("Connecting to: " + props.getProperty(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG) + " - " + inputTopic);
-        logger.info("Outputtng to: " + props.getProperty(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG) + " - " + outputTopic);
+        logger.info("Outputting to: " + props.getProperty(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG) + " - " + outputTopic);
 
         KStream<String, String> source = builder.stream(inputTopic);
         source.flatMapValues(value -> Arrays.asList(value.split("\\W+")))
