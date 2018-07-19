@@ -30,9 +30,6 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <properties>
-        <version.kafka.clients>1.0.0</version.kafka.clients>
-    </properties>
 
     <build>
         <plugins>

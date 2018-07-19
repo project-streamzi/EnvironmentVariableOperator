@@ -31,6 +31,11 @@ Depending on your permissions you may need to run the followinf command to allow
 $ oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:myproject:default
 ```
 
+## Deployment using ABP
+
+The Operator can be deployed using an Ansible Playbook Bundle from the [OCP Broker](https://github.com/project-streamzi/ocp-broker).
+Once the OCP Broker is installed the Environment Variable Operator will appear in the Service Catalog.
+
 TODO: Investigate permissions more
 
 ## Usage
