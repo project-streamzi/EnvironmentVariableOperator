@@ -58,7 +58,10 @@ public class DeploymentConfigOperator implements EnvironmentVariableOperator<Dep
 
                 for (String key : cm.getData().keySet()) {
 
-                    final EnvVar ev = new EnvVar(Util.sanitiseEnvVar(key), cm.getData().get(key), null);
+                    String evValue = cm.getData().get(key);
+                    if(evValue.equals("")) evValue = null;
+
+                    final EnvVar ev = new EnvVar(Util.sanitiseEnvVar(key), evValue, null);
 
                     final List<Container> containers = dc.getSpec().getTemplate().getSpec().getContainers();
 
