@@ -36,7 +36,7 @@ public class DeploymentWatcher implements Watcher<Deployment>, Runnable {
 
         final Map<String, String> labels = dc.getMetadata().getLabels();
         final String name = dc.getMetadata().getName();
-        logger.info("Deployment watch received event " + action + " on map " + name + " with labels" + labels);
+        logger.info("Deployment watch received event " + action + " on deployment " + name + " with labels" + labels);
 
         try {
             switch (action) {

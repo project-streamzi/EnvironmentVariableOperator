@@ -35,7 +35,7 @@ public class DeploymentConfigWatcher implements Watcher<DeploymentConfig>, Runna
 
         final Map<String, String> labels = dc.getMetadata().getLabels();
         final String name = dc.getMetadata().getName();
-        logger.info("DeploymentConfig watch received event " + action + " on map " + name + " with labels" + labels);
+        logger.info("DeploymentConfig watch received event " + action + " on deploymentconfig " + name + " with labels" + labels);
 
         try {
             switch (action) {
