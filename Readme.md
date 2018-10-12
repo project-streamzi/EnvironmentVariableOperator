@@ -33,7 +33,7 @@ $ oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:myp
 
 ## Deployment using ABP
 
-The Operator can be deployed using an Ansible Playbook Bundle from the [OCP Broker](https://github.com/project-streamzi/ocp-broker).
+The Operator can be deployed using an Ansible Playbook Bundle from the [OCP Broker](https://github.com/rh-event-flow/ocp-broker).
 Once the OCP Broker is installed the Environment Variable Operator will appear in the Service Catalog.
 
 TODO: Investigate permissions more
